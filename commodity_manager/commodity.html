@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>商品信息管理系统</title>
+    <style>
+        body {
+            font-family: "微软雅黑", Arial, sans-serif;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        h2 {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-top: 40px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        .container {
+            width: 95%;
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 32px 28px 24px 28px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+            background: #fafbfc;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        th, td {
+            border: none;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        th {
+            background: #f6d365;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background: #ffe0b2;
+            transition: background 0.2s;
+        }
+        .actions button {
+            margin: 0 4px;
+            padding: 5px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #fda085;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 6px rgba(253,160,133,0.08);
+        }
+        .actions button:hover {
+            background: #f6d365;
+            color: #333;
+        }
+        .form-row {
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .form-row label {
+            display: inline-block;
+            width: 90px;
+            color: #555;
+            font-size: 1em;
+        }
+        .form-row input {
+            width: 220px;
+            padding: 7px 10px;
+            border: 1.5px solid #eee;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+            margin-left: 8px;
+        }
+        .form-row input:focus {
+            border: 1.5px solid #fda085;
+            box-shadow: 0 0 6px #fda08533;
+        }
+        #form button {
+            margin-top: 10px;
+            padding: 7px 28px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #fda085 0%, #f6d365 100%);
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(253,160,133,0.10);
+            transition: background 0.2s, color 0.2s;
+        }
+        #form button:hover {
+            background: #f6d365;
+            color: #333;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .form-row label, .form-row input { width: 100%; margin: 0; }
+            .form-row { flex-direction: column; align-items: flex-start; }
+            table, th, td { font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+    <h2>商品信息管理系统</h2>
+    <div class="subtitle">简洁大气的商品管理系统，支持增删查改</div>
+    <div class="container">
+        <div id="form">
+            <div class="form-row">
+                <label>商品名称:</label>
+                <input type="text" id="name">
+            </div>
+            <div class="form-row">
+                <label>单价:</label>
+                <input type="number" id="price" step="0.01">
+            </div>
+            <div class="form-row">
+                <label>数量:</label>
+                <input type="number" id="quantity" step="1">
+            </div>
+            <button onclick="addCommodity()">添加商品</button>
+        </div>
+        <div style="margin-top:20px;">
+            <input type="text" id="searchId" placeholder="输入商品ID查询">
+            <button onclick="searchCommodity()">查询</button>
+            <button onclick="showAll()">显示全部</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>商品名称</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>总金额</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <script>
+        // 商品数据数组
+        let commodities = [];
+        let nextId = 1;
+
+        // 添加商品
+        function addCommodity() {
+            const name = document.getElementById('name').value.trim();
+            const price = parseFloat(document.getElementById('price').value);
+            const quantity = parseFloat(document.getElementById('quantity').value);
+
+            if (!name || isNaN(price) || isNaN(quantity)) {
+                alert('请填写完整的商品信息');
+                return;
+            }
+
+            const commodity = {
+                id: nextId++,
+                name,
+                price,
+                quantity,
+                total_value: price * quantity
+            };
+            commodities.push(commodity);
+            renderTable(commodities);
+            document.getElementById('name').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('quantity').value = '';
+        }
+
+        // 渲染表格
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.price}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.total_value}</td>
+                        <td class="actions">
+                            <button onclick="editCommodity(${item.id})">修改</button>
+                            <button onclick="deleteCommodity(${item.id})">删除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 删除商品
+        function deleteCommodity(id) {
+            if (!confirm('确定要删除吗？')) return;
+            commodities = commodities.filter(item => item.id !== id);
+            renderTable(commodities);
+        }
+
+        // 修改商品
+        function editCommodity(id) {
+            const item = commodities.find(c => c.id === id);
+            if (!item) return;
+            const newName = prompt('请输入新的商品名称', item.name);
+            if (newName === null) return;
+            const newPrice = parseFloat(prompt('请输入新的单价', item.price));
+            if (isNaN(newPrice)) return;
+            const newQuantity = parseFloat(prompt('请输入新的数量', item.quantity));
+            if (isNaN(newQuantity)) return;
+            item.name = newName;
+            item.price = newPrice;
+            item.quantity = newQuantity;
+            item.total_value = newPrice * newQuantity;
+            renderTable(commodities);
+        }
+
+        // 查询商品
+        function searchCommodity() {
+            const id = parseInt(document.getElementById('searchId').value);
+            if (isNaN(id)) {
+                alert('请输入正确的商品ID');
+                return;
+            }
+            const result = commodities.filter(item => item.id === id);
+            renderTable(result);
+        }
+
+        // 显示全部
+        function showAll() {
+            renderTable(commodities);
+        }
+    </script>
+</body>
+</html>

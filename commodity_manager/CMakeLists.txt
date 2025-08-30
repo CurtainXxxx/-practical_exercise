@@ -1,0 +1,29 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.27)
+PROJECT(COMMODITY_MANAGER C)
+
+SET(CMAKE_C_STANDARD 11)
+
+#指定头文件的编译目录
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+##指定 可执行文件的 目录位置
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+
+FILE(GLOB SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
+#指定源程序文件变量
+SET(SRC_LIST src/main.c src/menu.c src/file_io.c src/comm_operation.c)
+
+
+#链接单元测试Unity库文件
+LINK_LIBRARIES(commodity_test)
+LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+#启动测试命令
+ENABLE_TESTING()
+#添加测试的可执行文件
+ADD_EXECUTABLE(test_commodity test/test_commodity.c ${SRC_LIST})
+TARGET_COMPILE_DEFINITIONS(test_commodity PRIVATE UNIT_TESTING)
+TARGET_INCLUDE_DIRECTORIES(test_commodity PRIVATE include)
+##执行测试案例的
+ADD_TEST(NAME commodity_test COMMAND test_commodity)
+
